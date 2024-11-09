@@ -65,3 +65,8 @@ export default defineConfig({
 ```
 pnpm add -D @testing-library/react @testing-library/jest-dom @testing-library/user-event
 ```
+
+## amplify UI Builders
+```
+pnpm add @aws-amplify/ui-react
+```
