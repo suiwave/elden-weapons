@@ -19,8 +19,8 @@ export declare type PrimitiveOverrideProps<T> = Partial<T> & React.DOMAttributes
 
 export declare type LogoWithTextOverridesProps = {
   'Union'?: PrimitiveOverrideProps<IconProps>;
-  'Vector39193044'?: PrimitiveOverrideProps<IconProps>;
-  'Vector39193045'?: PrimitiveOverrideProps<IconProps>;
+  'Vector38632165'?: PrimitiveOverrideProps<IconProps>;
+  'Vector38632166'?: PrimitiveOverrideProps<IconProps>;
   'logo'?: PrimitiveOverrideProps<FlexProps>;
 } & EscapeHatchProps;
 

@@ -1,35 +1,58 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
-import ActionCard from './components/ui-components/ActionCard'
 import '@aws-amplify/ui-react/styles.css';
+import WeaponList from './components/ui-components/WeaponList';
+import { WeaponListOverridesProps } from './components/ui-components/WeaponList';
+import { Weapons } from './constants/weapons'
+
+const weaponListProps = Weapons.reduce<WeaponListOverridesProps>((acc, weapon, index) => {
+  acc[`WeaponCard${index + 1}`] = {
+    role: "article",
+    overrides: {
+      Name: {
+        children: String(weapon.name)
+      },
+      Category: {
+        children: String(weapon.weaponType)
+      },
+      UpgradeType: {
+        children: String(weapon.upgradeMethod)
+      },
+      Str: {
+        children: String(weapon.requirements["筋力"])
+      },
+      Tech: {
+        children: String(weapon.requirements["技量"])
+      },
+      Int: {
+        children: String(weapon.requirements["知力"])
+      },
+      Piety: {
+        children: String(weapon.requirements["信仰"])
+      },
+      Mystery: {
+        children: String(weapon.requirements["神秘"])
+      },
+      Arts: {
+        children: String(weapon.skill)
+      },
+      Effects: {
+        children: String(weapon.specialEffects)
+      },
+      HowToGet: {
+        children: String(weapon.acquisition)
+      }
+    }
+  };
+  return acc;
+}, {})
+
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button className='text-3xl font-bold underline' onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-      <ActionCard />
+      <WeaponList
+        overrides={weaponListProps}
+      />
     </>
   )
 }
