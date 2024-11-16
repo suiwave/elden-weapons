@@ -12,7 +12,7 @@ function Test() {
     const onClickButton = async () => {
         const { data, error } = await supabase
             .from('Test')
-            .select()
+            .select() // 全てSelectする
         console.log('data', data)
         console.log('error', error)
     }
@@ -22,24 +22,30 @@ function Test() {
             .from('Test')
             .delete()
             .eq('id', 1)
+        // どちらもnullになる
         console.log('data', data)
         console.log('error', error)
     }
+
     const onClickUpdateButton = async () => {
         const { data, error } = await supabase
             .from('Test')
             .upsert({ id: 1222, test_sui: 'aasadaf' })
             .select()
+        // errorが発生する。エラーメッセ―ジはinsertできませんよ。だった。セキュリティ高めたいから？
         console.log('data', data)
         console.log('error', error)
     }
+
     const onClickInsertButton = async () => {
         const { data, error } = await supabase
             .from('Test')
             .insert({ test_sui: "sadvsasda" })
+        // errorが発生する。エラーメッセ―ジはinsertできませんよ
         console.log('data', data)
         console.log('error', error)
     }
+
     return (
         <>
             <div className='grid'>
