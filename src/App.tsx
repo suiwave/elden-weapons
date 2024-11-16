@@ -3,6 +3,7 @@ import '@aws-amplify/ui-react/styles.css';
 import WeaponList from './components/ui-components/WeaponList';
 import { WeaponListOverridesProps } from './components/ui-components/WeaponList';
 import { Weapons } from './constants/weapons'
+import Test from './components/Test';
 
 const weaponListProps = Weapons.reduce<WeaponListOverridesProps>((acc, weapon, index) => {
   acc[`WeaponCard${index + 1}`] = {
@@ -50,6 +51,7 @@ function App() {
 
   return (
     <>
+      <Test />
       <WeaponList
         overrides={weaponListProps}
       />
