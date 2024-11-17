@@ -46,6 +46,31 @@ function Test() {
         console.log('error', error)
     }
 
+    const onClickGreaterThanOrEqualButton = async () => {
+        const { data, error } = await supabase
+            .from('Test')
+            .select()
+            .gte('id', 2)
+        console.log('data', data)
+        console.log('error', error)
+    }
+
+    const onClickLessThanButton = async () => {
+        const { data, error } = await supabase
+            .from('Test')
+            .select()
+            .lt('id', 2)
+        console.log('data', data)
+        console.log('error', error)
+    }
+
+    const onClickGenerateRandomButton = async () => {
+        const { data, error } = await supabase
+            .rpc('get_random_scores')
+        console.log('data', data)
+        console.log('error', error)
+    }
+
     return (
         <>
             <div className='grid'>
@@ -53,6 +78,9 @@ function Test() {
                 <button onClick={onClickDeleteButton}>delete!</button>
                 <button onClick={onClickUpdateButton}>update!</button>
                 <button onClick={onClickInsertButton}>insert!</button>
+                <button onClick={onClickGreaterThanOrEqualButton}>GreaterThanOrEqual query!</button>
+                <button onClick={onClickLessThanButton}>LessThan query!</button>
+                <button onClick={onClickGenerateRandomButton}>GenerateRandom query!</button>
             </div>
         </>
     )

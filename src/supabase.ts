@@ -57,7 +57,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_random_scores: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: number
+          test_sui: string
+          adjusted_score: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
