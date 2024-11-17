@@ -65,6 +65,25 @@ function Test() {
     }
 
     const onClickGenerateRandomButton = async () => {
+        /**
+         * 
+         * SQL Editorで作った関数を実行する
+        create or replace function get_random_scores()
+        returns table (
+            id int,
+            score int,
+            adjusted_score int  -- floatからintに変更
+        )
+        language sql
+        as $$
+            select 
+                id,
+                score,
+                score + floor(random() * 100)::int as adjusted_score
+            from your_table
+            order by adjusted_score desc;
+        $$;
+         */
         const { data, error } = await supabase
             .rpc('get_random_scores')
         console.log('data', data)
