@@ -58,8 +58,9 @@ const WIKI_WEAPON_URLs = [
 // パースして作成するWeaponオブジェクト
 interface Weapon {
     name: string;
-    wiki_url: string;
+    weapon_url: string;
     arts: string;
+    arts_url: string;
     getMethod: string;
     effect: string;
     str_required: string;
@@ -106,7 +107,7 @@ const fetchWeaponData = async (url: string): Promise<Weapon[]> => {
 
 const convertObject = (weaponNameElm: cheerio.Cheerio, elwElm: cheerio.Cheerio): Weapon => {
     const name = weaponNameElm.find('.link_page_passage').text()
-    const wiki_url = weaponNameElm.find('.link_page_passage').attr("href") ?? "not found";
+    const weapon_url = weaponNameElm.find('.link_page_passage').attr("href") ?? "not found weapon_url";
 
     const elwTable = elwElm.children()
     /**
@@ -150,7 +151,9 @@ const convertObject = (weaponNameElm: cheerio.Cheerio, elwElm: cheerio.Cheerio):
     const effectTable = elwTable.children('div').eq(3)
 
     const upgrade_path = atackTable.find('.ie5 table tbody tr:first-child td:last-child').text();
-    const arts = specTable.find('.ie5 table tbody tr:first-child td a.link_page_passage').text();
+    const artsElement = specTable.find('.ie5 table tbody tr:first-child td:nth-child(7)');
+    const arts = artsElement.text();
+    const arts_url = artsElement.find("a").attr("href") ?? "not found art_url";
     const str_required = specTable.find('.ie5 table tbody tr:last-child td:nth-child(1)').text();
     const dex_required = specTable.find('.ie5 table tbody tr:last-child td:nth-child(2)').text();
     const int_required = specTable.find('.ie5 table tbody tr:last-child td:nth-child(3)').text();
@@ -162,8 +165,9 @@ const convertObject = (weaponNameElm: cheerio.Cheerio, elwElm: cheerio.Cheerio):
 
     return {
         name,
-        wiki_url,
+        weapon_url,
         arts,
+        arts_url,
         getMethod,
         effect,
         str_required,
@@ -182,6 +186,7 @@ const main = async () => {
         const pageWeapons = await fetchWeaponData(`${WIKI_BASE_URL}${url}`);
         allWeapons.push(...pageWeapons);
     }
+
     const csv = Papa.unparse(allWeapons);
     writeFile("./result/weapons.csv", csv)
 }
