@@ -1,7 +1,7 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-// import * as fs from 'fs';
-// import * as path from 'path';
+import Papa from 'papaparse';
+import { writeFile } from './writeFile';
 
 // WikiページのURL（例）
 const WIKI_BASE_URL = 'https://kamikouryaku.net/eldenring';
@@ -44,7 +44,8 @@ const WIKI_WEAPON_URLs = [
     "/?%E5%A4%A7%E5%BC%93",
     "/?%E3%82%AF%E3%83%AD%E3%82%B9%E3%83%9C%E3%82%A6",
     "/?%E3%83%90%E3%83%AA%E3%82%B9%E3%82%BF",
-    "/?%E7%9F%A2%E3%83%BB%E3%83%9C%E3%83%AB%E3%83%88",
+    // 矢・ボルトはスキップする
+    // "/?%E7%9F%A2%E3%83%BB%E3%83%9C%E3%83%AB%E3%83%88",
     "/?%E6%9D%96",
     "/?%E8%81%96%E5%8D%B0",
     // 盾
@@ -70,7 +71,7 @@ interface Weapon {
     enable_change_arts: string;
 }
 
-const fetchWeaponData = async (url: string) => {
+const fetchWeaponData = async (url: string): Promise<Weapon[]> => {
     const weaponArray: Weapon[] = []
 
     const response = await axios.get(url);
@@ -87,17 +88,20 @@ const fetchWeaponData = async (url: string) => {
         const nextElm = $(h3).next();
         const nextNextElm = $(nextElm).next();
 
-        let elwElm;
+        let elwElm: cheerio.Cheerio | null = null;
         if (nextElm.is('.elw')) {
             elwElm = nextElm;
         } else if (nextNextElm.is('.elw')) {
             elwElm = nextNextElm;
         }
 
+        // 一部ページは '#body > h3' で武器以外がヒットする場合があるのでスキップする
+        if (elwElm === null) return
+
         weaponArray.push(convertObject(weaponNameElm, elwElm))
     })
 
-    console.log(weaponArray)
+    return weaponArray
 }
 
 const convertObject = (weaponNameElm: cheerio.Cheerio, elwElm: cheerio.Cheerio): Weapon => {
@@ -155,7 +159,7 @@ const convertObject = (weaponNameElm: cheerio.Cheerio, elwElm: cheerio.Cheerio):
     const enable_change_arts = specTable.find('.ie5 table tbody tr:last-child td:last-child').text();
     const getMethod = getMethodTable.find('td').text().replace('入手方法', '')
     const effect = effectTable.find('td').text().replace('付帯効果', '')
-    // TODO：その他項目も取得する
+
     return {
         name,
         wiki_url,
@@ -173,7 +177,13 @@ const convertObject = (weaponNameElm: cheerio.Cheerio, elwElm: cheerio.Cheerio):
 }
 
 const main = async () => {
-    fetchWeaponData(`${WIKI_BASE_URL}${WIKI_WEAPON_URLs[WIKI_WEAPON_URLs.length - 1]}`)
+    const allWeapons: Weapon[] = []
+    for (const url of WIKI_WEAPON_URLs) {
+        const pageWeapons = await fetchWeaponData(`${WIKI_BASE_URL}${url}`);
+        allWeapons.push(...pageWeapons);
+    }
+    const csv = Papa.unparse(allWeapons);
+    writeFile("./result/weapons.csv", csv)
 }
 
 main()
