@@ -59,9 +59,10 @@ const WIKI_WEAPON_URLs = [
 interface Weapon {
     name: string;
     weapon_url: string;
+    weapon_category: string;
     arts: string;
     arts_url: string;
-    getMethod: string;
+    get_method: string;
     effect: string;
     str_required: string;
     dex_required: string;
@@ -69,7 +70,7 @@ interface Weapon {
     fth_required: string;
     myt_required: string;
     upgrade_path: string;
-    enable_change_arts: string;
+    enable_change_arts: boolean;
 }
 
 const fetchWeaponData = async (url: string): Promise<Weapon[]> => {
@@ -78,6 +79,8 @@ const fetchWeaponData = async (url: string): Promise<Weapon[]> => {
     const response = await axios.get(url);
     const html = response.data;
     const $ = cheerio.load(html);
+
+    const weapon_category = $('h1.body').text();
 
     $('#body > h3').each((_, h3) => {
         const weaponNameElm = $(h3);
@@ -99,15 +102,15 @@ const fetchWeaponData = async (url: string): Promise<Weapon[]> => {
         // 一部ページは '#body > h3' で武器以外がヒットする場合があるのでスキップする
         if (elwElm === null) return
 
-        weaponArray.push(convertObject(weaponNameElm, elwElm))
+        weaponArray.push(convertObject(weapon_category, weaponNameElm, elwElm))
     })
 
     return weaponArray
 }
 
-const convertObject = (weaponNameElm: cheerio.Cheerio, elwElm: cheerio.Cheerio): Weapon => {
+const convertObject = (weapon_category: string, weaponNameElm: cheerio.Cheerio, elwElm: cheerio.Cheerio): Weapon => {
     const name = weaponNameElm.find('.link_page_passage').text()
-    const weapon_url = weaponNameElm.find('.link_page_passage').attr("href") ?? "not found weapon_url";
+    const weapon_url = weaponNameElm.find('.link_page_passage').attr("href")?.replace(/^\./, "") ?? "not found weapon_url";
 
     const elwTable = elwElm.children()
     /**
@@ -153,22 +156,26 @@ const convertObject = (weaponNameElm: cheerio.Cheerio, elwElm: cheerio.Cheerio):
     const upgrade_path = atackTable.find('.ie5 table tbody tr:first-child td:last-child').text();
     const artsElement = specTable.find('.ie5 table tbody tr:first-child td:nth-child(7)');
     const arts = artsElement.text();
-    const arts_url = artsElement.find("a").attr("href") ?? "not found art_url";
-    const str_required = specTable.find('.ie5 table tbody tr:last-child td:nth-child(1)').text();
-    const dex_required = specTable.find('.ie5 table tbody tr:last-child td:nth-child(2)').text();
-    const int_required = specTable.find('.ie5 table tbody tr:last-child td:nth-child(3)').text();
-    const fth_required = specTable.find('.ie5 table tbody tr:last-child td:nth-child(4)').text();
-    const myt_required = specTable.find('.ie5 table tbody tr:last-child td:nth-child(5)').text();
-    const enable_change_arts = specTable.find('.ie5 table tbody tr:last-child td:last-child').text();
-    const getMethod = getMethodTable.find('td').text().replace('入手方法', '')
+    const arts_url = artsElement.find("a").attr("href")?.replace(/^\./, "") ?? "not found art_url";
+    const str_required = specTable.find('.ie5 table tbody tr:last-child td:nth-child(1)').text().replace("-", "0").replace(/\(\d{1,2}\)/, ""); // 「0」じゃなく「-」な武器もあるので置換する.また、両手持ちの場合の要求筋力がカッコ書きされている武器があるが無視する（大弓だけ）
+    const dex_required = specTable.find('.ie5 table tbody tr:last-child td:nth-child(2)').text().replace("-", "0"); // 「0」じゃなく「-」な武器もあるので置換する
+    const int_required = specTable.find('.ie5 table tbody tr:last-child td:nth-child(3)').text().replace("-", "0"); // 「0」じゃなく「-」な武器もあるので置換する
+    const fth_required = specTable.find('.ie5 table tbody tr:last-child td:nth-child(4)').text().replace("-", "0"); // 「0」じゃなく「-」な武器もあるので置換する
+    const myt_required = specTable.find('.ie5 table tbody tr:last-child td:nth-child(5)').text().replace("-", "0"); // 「0」じゃなく「-」な武器もあるので置換する
+    let enable_change_arts = specTable.find('.ie5 table tbody tr:last-child td:last-child').text() === "◯";
+    // 大盾のみ、ページ内に戦灰付け替え可能かどうか記載がない。
+    // たぶん強化方法とリンクしているのでそれで置き換える。
+    if (weapon_category === "大盾") enable_change_arts = (upgrade_path === "通常")
+    const get_method = getMethodTable.find('td').text().replace('入手方法', '')
     const effect = effectTable.find('td').text().replace('付帯効果', '')
 
     return {
         name,
         weapon_url,
+        weapon_category,
         arts,
         arts_url,
-        getMethod,
+        get_method,
         effect,
         str_required,
         dex_required,
